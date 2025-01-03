@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "EventTrack",
-    "slug": "EventTrack",
+    "slug": "eventtrack",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,8 +27,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "7a33e43b-4e4c-496b-819d-1cc34cf96532"
+        "projectId": "a53e78eb-2780-4b79-9166-d8a15a9cdd16"
       }
-    }
+    },
+    "owner": "manugarricas"
   }
 }
