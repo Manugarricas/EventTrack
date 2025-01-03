@@ -42,21 +42,19 @@ const Calendario = () => {
     const currentDate = selectedDate || date;
     setShowPicker(false);
     setDay(currentDate);
-    handleAddEvent();
-  }
-
-  const handleAddEvent = () => {
-    console.log('Fecha seleccionada: ', date.toISOString().split('T')[0]);
-    addEvent(date.toISOString().split('T')[0]);
+    addEvent(selectedDate);
   }
 
   const addEvent = async (date) => {
-    console.log(date);
-    setEvents({
+    const parsedDate = date.toISOString().split('T')[0];
+
+    const updateEvents = {
       ...events,
-      date: { marked: true, dotColor: 'green' }
-    });
-    console.log(events);
+      [parsedDate]: { marked: true, dotColor: 'green' },
+    };
+
+    setEvents(updateEvents);
+
     try {
       await AsyncStorage.setItem('events', JSON.stringify(events));
     } catch (error) {
