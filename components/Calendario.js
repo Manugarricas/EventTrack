@@ -4,14 +4,17 @@ import { useEffect, useState } from 'react';
 import { Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+// const [events, setEvents] = useState(
+//  {
+//   '2025-01-02': { marked: true, dotColor: 'red' },
+//  }
+// )
 
 const Calendario = () => {
+
   const [events, setEvents] = useState({});
-  const [modalVisible, setModalVisible] = useState(false);
-  const [addEventModalVisibility, setEventModalVisibility] = useState(false);
-  const [date, setDay] = useState(new Date());
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -27,21 +30,36 @@ const Calendario = () => {
     loadEvents();
   }, []);
 
-  const addEvent = async (selectedDate) => {
-    const parsedDate = selectedDate.toISOString().split('T')[0];
+  const [modalVisible, setModalVisible] = useState(false);
 
-    const updatedEvents = {
+  const [addEventModalVisibility, setEventModalVisibility] = useState(false);
+
+  const [date, setDay] = useState(new Date());
+
+  const [showPicker, setShowPicker] = useState(false);
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowPicker(false);
+    setDay(currentDate);
+    addEvent(selectedDate);
+  }
+
+  const addEvent = async (date) => {
+    const parsedDate = date.toISOString().split('T')[0];
+
+    const updateEvents = {
       ...events,
       [parsedDate]: { marked: true, dotColor: 'green' },
     };
 
-    setEvents(updatedEvents);
+    setEvents(updateEvents);
 
     try {
-      await AsyncStorage.setItem('events', JSON.stringify(updatedEvents));
+      await AsyncStorage.setItem('events', JSON.stringify(events));
     } catch (error) {
       console.error(error);
-    }
+    };
   };
 
   const deleteEvents = async () => {
@@ -51,7 +69,7 @@ const Calendario = () => {
     } catch (error) {
       console.error(error);
     }
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -64,6 +82,7 @@ const Calendario = () => {
         animationType="slide"
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}>
+
         <View style={styles.overlay}>
           <View style={styles.alertBox}>
             <Text style={styles.alertTitle}>¡Éxito!</Text>
@@ -71,12 +90,14 @@ const Calendario = () => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={[styles.button, styles.cancelButton]}
-                onPress={() => setModalVisible(false)}>
+                onPress={() => setModalVisible(false)}
+              >
                 <Text style={styles.buttonText}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, styles.confirmButton]}
-                onPress={() => setModalVisible(false)}>
+                onPress={() => setModalVisible(false)}
+              >
                 <Text style={styles.buttonText}>Aceptar</Text>
               </TouchableOpacity>
             </View>
@@ -85,39 +106,42 @@ const Calendario = () => {
       </Modal>
       <Modal
         transparent={true}
-        animationType="slide"
+        animationType='slide'
         visible={addEventModalVisibility}
         onRequestClose={() => setEventModalVisibility(false)}>
         <View style={styles.overlay}>
           <View style={styles.alertBox}>
-            <Text>¿En qué fecha quieres añadir el evento?</Text>
-            <TextInput />
-            <Button title="Cancelar" onPress={() => setEventModalVisibility(false)} />
+            <Text>En que fecha quieres añadir el evento?</Text>
+            <TextInput></TextInput>
+            <Button title='Cancelar' onPress={() => setEventModalVisibility(false)} />
           </View>
         </View>
       </Modal>
       <Calendar
         onDayPress={(day) => {
-          addEvent(new Date(day.dateString));
+          addEvent(day);
         }}
-        markedDates={events}
+        markedDates={
+          events
+        }
       />
-      <Button title="Agregar evento" onPress={() => setEventModalVisibility(true)} />
-      <Button title="Borrar eventos" onPress={deleteEvents} />
-      <Text>Selecciona una fecha:</Text>
-      <DatePicker
-        selected={date}
-        onChange={(selectedDate) => {
-          setDay(selectedDate);
-          addEvent(selectedDate);
-        }}
-        dateFormat="yyyy-MM-dd"
-      />
+      <Button title='Agregar evento' onPress={() => setEventModalVisibility(true)} />
+      <Button title='Borrar eventos' onPress={() => deleteEvents} />
+      <Button title="Abrir Selector de Fecha" onPress={() => setShowPicker(true)} />
+      {showPicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display="default"
+          onChange={onChange}
+        />
+      )}
       <Text style={styles.selectedDate}>
         Fecha seleccionada: {date.toISOString().split('T')[0]}
       </Text>
     </View>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -131,7 +155,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semitransparente
   },
   alertBox: {
     width: 300,
@@ -143,7 +167,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 5, // Sombra para Android
   },
   alertTitle: {
     fontSize: 20,
@@ -170,18 +194,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: '#e74c3c', // Rojo
   },
   confirmButton: {
-    backgroundColor: '#2ecc71',
+    backgroundColor: '#2ecc71', // Verde
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-  },
-  selectedDate: {
-    marginTop: 20,
-    fontSize: 16,
   },
 });
 
