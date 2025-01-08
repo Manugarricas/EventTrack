@@ -26,8 +26,8 @@ const Eventos = () => {
       <Text style={styles.text}>Esta es la pantalla de Eventos</Text>
       <FlatList
         data={events}
-        // keyExtractor={events => events}
-        renderItem={({item}) => <View>{{item}}</View>}
+        keyExtractor={events => events.date}
+        renderItem={({item}) => <View><Text>{item.date}</Text></View>}
       />
     </View>
   );

@@ -47,15 +47,34 @@ const CustomDatePicker = ({ date, setDate, addEvent }) => {
 };
 
 const Calendario = () => {
-  const [events, setEvents] = useState({});
+  const [events, setEvents] = useState([]);
   const [date, setDay] = useState(new Date());
+  const [dates, setDates] = useState({});
 
   useEffect(() => {
     const loadEvents = async () => {
       try {
         const events = await AsyncStorage.getItem('events');
         if (events !== null) {
-          setEvents(JSON.parse(events));
+          console.log('Events: ');
+          console.log(events);
+          const eventsParsed = JSON.parse(events);
+          setEvents(eventsParsed);
+          // console.log(eventsParsed);
+          // eventsParsed.map(event => console.log(event.date));
+          console.log('Events parsed: ');
+          console.log(eventsParsed);
+          setDates(...eventsParsed);
+          let datesToSave = {}
+          eventsParsed.forEach(event => {
+            datesToSave = {
+              ...datesToSave,
+              [event.date]: {dotColor: 'green', marked: true}
+            }
+          });
+          console.log('Dates: ');
+          console.log(datesToSave);
+          setDates(datesToSave);
         }
       } catch (error) {
         console.error(error);
@@ -65,12 +84,13 @@ const Calendario = () => {
   }, []);
 
   const addEvent = async (selectedDate) => {
-    const parsedDate = selectedDate.toISOString().split('T')[0];
+    const parsedDate = selectedDate.toISOString().split('T')
 
-    const updatedEvents = {
+    const updatedEvents = [
       ...events,
-      [parsedDate]: { marked: true, dotColor: 'green' },
-    };
+      // [parsedDate]: { marked: true, dotColor: 'green' },
+      {date: parsedDate, marked: true, dotColor: 'green'}
+    ];
 
     setEvents(updatedEvents);
 
@@ -97,7 +117,7 @@ const Calendario = () => {
         onDayPress={(day) => {
           addEvent(new Date(day.dateString));
         }}
-        markedDates={events}
+        markedDates={dates}
       />
       <Button title="Borrar eventos" onPress={deleteEvents} />
       <Text>Selecciona una fecha:</Text>
